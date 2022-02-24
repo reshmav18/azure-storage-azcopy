@@ -145,6 +145,8 @@ func (*mockedLifecycleManager) IsForceLoggingDisabled() bool {
 	return false
 }
 
+func (*mockedLifecycleManager) SetSilentMode() {}
+
 func (*mockedLifecycleManager) E2EAwaitContinue() {
 	// not implemented in mocked version
 }

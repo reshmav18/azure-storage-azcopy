@@ -68,6 +68,7 @@ type LifecycleMgr interface {
 	RegisterCloseFunc(func())
 	SetForceLogging()
 	IsForceLoggingDisabled() bool
+	SetSilentMode()
 }
 
 func GetLifecycleMgr() LifecycleMgr {
@@ -91,6 +92,7 @@ type lifecycleMgr struct {
 	e2eAllowAwaitOpen     bool           // allow the user to send 'open' from stdin to allow the opening of the first file
 	closeFunc             func()         // used to close logs before exiting
 	disableSyslog         bool
+	silentMode            bool
 }
 
 type userInput struct {
@@ -215,6 +217,9 @@ func (lcm *lifecycleMgr) Init(o OutputBuilder) {
 }
 
 func (lcm *lifecycleMgr) Progress(o OutputBuilder) {
+	if lcm.silentMode {
+		return
+	}
 	messageContent := ""
 	if o != nil {
 		messageContent = o(lcm.outputFormat)
@@ -227,6 +232,9 @@ func (lcm *lifecycleMgr) Progress(o OutputBuilder) {
 }
 
 func (lcm *lifecycleMgr) Info(msg string) {
+	if lcm.silentMode {
+		return
+	}
 
 	msg = lcm.logSanitizer.SanitizeLogMessage(msg) // sometimes error-like text comes through Info, before the final "we've failed, please stop now" signal comes to Error. So we sanitize in both places.
 
@@ -588,6 +596,10 @@ func (lcm *lifecycleMgr) SetForceLogging() {
 
 func (lcm *lifecycleMgr) IsForceLoggingDisabled() bool {
 	return lcm.disableSyslog
+}
+
+func (lcm *lifecycleMgr) SetSilentMode() {
+	lcm.silentMode = true
 }
 
 // captures the common logic of exiting if there's an expected error
