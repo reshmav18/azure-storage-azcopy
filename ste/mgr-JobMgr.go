@@ -400,12 +400,15 @@ func (jm *jobMgr) logPerfInfo(displayStrings []string, constraint common.PerfCon
 // initializeJobPartPlanInfo func initializes the JobPartPlanInfo handler for given JobPartOrder
 func (jm *jobMgr) AddJobPart(partNum PartNumber, planFile JobPartPlanFileName, existingPlanMMF *JobPartPlanMMF, sourceSAS string,
 	destinationSAS string, scheduleTransfers bool, completionChan chan struct{}) IJobPartMgr {
+	ctx, cancel := context.WithCancel(context.WithValue(jm.ctx, ServiceAPIVersionOverride, DefaultServiceApiVersion))
 	jpm := &jobPartMgr{jobMgr: jm, filename: planFile, sourceSAS: sourceSAS,
 		destinationSAS: destinationSAS, pacer: jm.pacer,
 		slicePool:        jm.slicePool,
 		cacheLimiter:     jm.cacheLimiter,
 		fileCountLimiter: jm.fileCountLimiter,
 		closeOnCompletion: completionChan,
+		ctx: ctx,
+		cancel: cancel,
 		}
 	// If an existing plan MMF was supplied, re use it. Otherwise, init a new one.
 	if existingPlanMMF == nil {
@@ -448,6 +451,7 @@ func (jm *jobMgr) AddJobOrder(order common.CopyJobPartOrderRequest) IJobPartMgr 
 	jppfn := JobPartPlanFileName(fmt.Sprintf(JobPartPlanFileNameFormat, order.JobID.String(), 0, DataSchemaVersion))	 
 	jppfn.Create(order)  // Convert the order to a plan file
 
+	ctx, cancel := context.WithCancel(context.WithValue(jm.ctx, ServiceAPIVersionOverride, DefaultServiceApiVersion))
 	jpm := &jobPartMgr{
 		jobMgr: jm, 
 		filename: jppfn,
@@ -458,6 +462,8 @@ func (jm *jobMgr) AddJobOrder(order common.CopyJobPartOrderRequest) IJobPartMgr 
 		cacheLimiter:     jm.cacheLimiter,
 		fileCountLimiter: jm.fileCountLimiter,
 		credInfo:         order.CredentialInfo,
+		ctx: ctx,
+		cancel: cancel,
 	}
 	jpm.planMMF = jpm.filename.Map()
 	jm.jobPartMgrs.Set(order.PartNum, jpm)
@@ -848,7 +854,7 @@ func (jm *jobMgr) scheduleJobParts() {
 			go jm.poolSizer()
 			startedPoolSizer = true
 		}
-		jobPart.ScheduleTransfers(jm.Context())
+		jobPart.ScheduleTransfers()
 	}
 }
 
