@@ -595,7 +595,7 @@ func (jm *jobMgr) reportJobPartDoneHandler() {
 		partProgressInfo := <-jm.jobPartProgress
 		jobPart0Mgr, ok := jm.jobPartMgrs.Get(0)
 		if !ok {
-			jm.Panic(fmt.Errorf("Failed to find Job %v, Part #0", jm.jobID))
+			jm.Panic(fmt.Errorf("failed to find Job %v, Part #0", jm.jobID))
 		}
 		part0Plan := jobPart0Mgr.Plan()
 		jobStatus := part0Plan.JobStatus() // status of part 0 is status of job as a whole
@@ -606,6 +606,10 @@ func (jm *jobMgr) reportJobPartDoneHandler() {
 
 		if partProgressInfo.completionChan != nil {
 			close(partProgressInfo.completionChan)
+		}
+
+		if partProgressInfo.partNum != 0 { //0th parth is used for book keeping
+			jm.jobPartMgrs.Delete(partProgressInfo.partNum)
 		}
 
 		// If the last part is still awaited or other parts all still not complete,
