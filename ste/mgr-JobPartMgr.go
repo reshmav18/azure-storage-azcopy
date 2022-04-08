@@ -28,7 +28,7 @@ var DebugSkipFiles = make(map[string]bool)
 
 type IJobPartMgr interface {
 	Plan() *JobPartPlanHeader
-	ScheduleTransfers(jobCtx context.Context)
+	ScheduleTransfers()
 	StartJobXfer(jptm IJobPartTransferMgr)
 	ReportTransferDone(status common.TransferStatus) uint32
 	GetOverwriteOption() common.OverwriteOption
@@ -62,6 +62,7 @@ type IJobPartMgr interface {
 	IsSourceEncrypted() bool
 	/* Status Manager Updates */
 	SendXferDoneMsg(msg xferDoneMsg)
+	Cancel()
 }
 
 type serviceAPIVersionOverride struct{}
@@ -314,6 +315,9 @@ type jobPartMgr struct {
 	cpkOptions common.CpkOptions
 
 	closeOnCompletion chan struct{}
+
+	ctx context.Context
+	cancel context.CancelFunc
 }
 
 func (jpm *jobPartMgr) getOverwritePrompter() *overwritePrompter {
@@ -333,8 +337,7 @@ func (jpm *jobPartMgr) Plan() *JobPartPlanHeader {
 }
 
 // ScheduleTransfers schedules this job part's transfers. It is called when a new job part is ordered & is also called to resume a paused Job
-func (jpm *jobPartMgr) ScheduleTransfers(jobCtx context.Context) {
-	jobCtx = context.WithValue(jobCtx, ServiceAPIVersionOverride, DefaultServiceApiVersion)
+func (jpm *jobPartMgr) ScheduleTransfers() {
 	jpm.atomicTransfersDone = 0 // Reset the # of transfers done back to 0
 	// partplan file is opened and mapped when job part is added
 	// jpm.planMMF = jpm.filename.Map() // Open the job part plan file & memory-map it in
@@ -399,7 +402,7 @@ func (jpm *jobPartMgr) ScheduleTransfers(jobCtx context.Context) {
 
 	jpm.priority = plan.Priority
 
-	jpm.createPipelines(jobCtx) // pipeline is created per job part manager
+	jpm.createPipelines(jpm.ctx) // pipeline is created per job part manager
 
 	// *** Schedule this job part's transfers ***
 	for t := uint32(0); t < plan.NumTransfers; t++ {
@@ -432,7 +435,7 @@ func (jpm *jobPartMgr) ScheduleTransfers(jobCtx context.Context) {
 		}
 
 		// Each transfer gets its own context (so any chunk can cancel the whole transfer) based off the job's context
-		transferCtx, transferCancel := context.WithCancel(jobCtx)
+		transferCtx, transferCancel := context.WithCancel(jpm.ctx)
 		// Initialize a job part transfer manager
 		jptm := &jobPartTransferMgr{
 			jobPartMgr:          jpm,
@@ -911,6 +914,9 @@ func (jpm *jobPartMgr) SendXferDoneMsg(msg xferDoneMsg) {
 	jpm.jobMgr.SendXferDoneMsg(msg)
 }
 
+func (jpm *jobPartMgr) Cancel() {
+	jpm.cancel()
+}
 // TODO: Can we delete this method?
 // numberOfTransfersDone returns the numberOfTransfersDone_doNotUse of JobPartPlanInfo
 // instance in thread safe manner
