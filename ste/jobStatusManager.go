@@ -36,23 +36,23 @@ type JobPartCreatedMsg struct {
 
 type xferDoneMsg = common.TransferDetail
 type jobStatusManager struct {
-	js            common.ListJobSummaryResponse
-	respChan      chan common.ListJobSummaryResponse
-	listReq       chan struct {}
-	partCreated   chan JobPartCreatedMsg
-	xferDone      chan xferDoneMsg
-	drainXferDone chan struct{}
-	statusMgrDone chan struct{}
+	js              common.ListJobSummaryResponse
+	respChan        chan common.ListJobSummaryResponse
+	listReq         chan struct{}
+	partCreated     chan JobPartCreatedMsg
+	xferDone        chan xferDoneMsg
+	xferDoneDrained chan struct{}
+	statusMgrDone   chan struct{}
 }
 
 func (jm *jobMgr) waitToDrainXferDone() {
-	<-jm.jstm.drainXferDone
+	<-jm.jstm.xferDoneDrained
 }
 
 func (jm *jobMgr) statusMgrClosed() bool {
 	select {
 	case <-jm.jstm.statusMgrDone:
-			return true
+		return true
 	default:
 		return false
 	}
@@ -60,11 +60,11 @@ func (jm *jobMgr) statusMgrClosed() bool {
 
 /* These functions should not fail */
 func (jm *jobMgr) SendJobPartCreatedMsg(msg JobPartCreatedMsg) {
+	jm.jstm.partCreated <- msg
 	if msg.IsFinalPart {
 		//Inform statusManager that this is all parts we've
 		close(jm.jstm.partCreated)
 	}
-	jm.jstm.partCreated <- msg
 }
 
 func (jm *jobMgr) SendXferDoneMsg(msg xferDoneMsg) {
@@ -123,7 +123,7 @@ func (jm *jobMgr) handleStatusUpdateMessage() {
 
 				//close drainXferDone so that other components can know no further updates happen
 				allXferDoneHandled = true
-				close(jstm.drainXferDone)
+				close(jstm.xferDoneDrained)
 			}
 
 			msg.Src = common.URLStringExtension(msg.Src).RedactSecretQueryParamForLogging()
