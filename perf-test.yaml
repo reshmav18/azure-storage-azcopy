@@ -22,7 +22,7 @@ stages:
           value: "1"
 
       steps:
-        - checkout: none
+#        - checkout: none
 #          path: "$(Agent.HomeDirectory)/go/src/github.com/Azure/azure-storage-azcopy/"
 
         - script: |
