@@ -35,7 +35,7 @@ stages:
             version: '1.19.3'
         
         - script: |
-            go build -o $GOROOT/azcopy
+            go build -o $GOROOT/bin/azcopy
             azcopy
           displayName: 'Build Azcopy'
 
