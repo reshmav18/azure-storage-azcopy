@@ -21,8 +21,8 @@ stages:
         - name: "AZCOPY_SHOW_PERF_STATES"
           value: "1"
 
-#      steps:
-#        - checkout: self
+      steps:
+        - checkout: none
 #          path: "$(Agent.HomeDirectory)/go/src/github.com/Azure/azure-storage-azcopy/"
 
         - script: |
