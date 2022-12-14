@@ -12,7 +12,7 @@ stages:
         Ubuntu-22:
           imageName: 'azcopyPerfUbuntu22'
           type: 'linux'
-         Description: "AzCopy Perf Test"
+          Description: "AzCopy Perf Test"
     pool:
       name: 'AzCopyPerfTestUbuntu'
       demands: 
