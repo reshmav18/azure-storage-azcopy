@@ -11,7 +11,7 @@ stages:
       matrix:
         Ubuntu-22:
           imageName: 'azcopyPerfUbuntu22'
-          type: 'linux'i
+          type: 'linux'
          Description: "AzCopy Perf Test"
     pool:
       name: 'AzCopyPerfTestUbuntu'
