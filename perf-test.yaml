@@ -11,14 +11,15 @@ stages:
       matrix:
         Ubuntu-22:
           imageName: 'azcopyPerfUbuntu22'
-          type: 'linux'
+          type: 'linux'i
+         Description: "AzCopy Perf Test"
     pool:
       name: 'AzCopyPerfTestUbuntu'
       demands: 
         - ImageOverride -equals $(imageName)
     steps:
     - checkout: none 
-         
+
         - script: |
             echo $(Description)
             hostnamectl
