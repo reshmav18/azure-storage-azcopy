@@ -1,26 +1,31 @@
-
 trigger: none
 pr: none
 
 stages:
-- stage: smallfiles
+- stage: Smallfiles
   jobs:
-  - job: Build
-    timeoutInMinutes: 360
-    strategy:
-      matrix:
-        Ubuntu-22:
-          imageName: 'azcopyPerfUbuntu22'
-          type: 'linux'
-          Description: "AzCopy Perf Test"
-    pool:
-      name: 'AzCopyPerfTestUbuntu'
-      demands: 
-        - ImageOverride -equals $(imageName)
-    steps:
-    - checkout: none 
+    - job: Build
+      timeoutInMinutes: 360
+      strategy:
+        matrix:
+          Ubuntu-22:
+            imageName: "azcopyPerfUbuntu22"
+            Description: "AzCopy Perf Test"
 
+      pool:
+        name: "AzCopyPerfTestUbuntu"
+        demands:
+          - ImageOverride -equals $(imageName)
+
+      variables:
+        - group: NightlyBlobFuse
+        - name: MOUNT_DIR
+      
+      steps:
+        - checkout: none      
+        
         - script: |
             echo $(Description)
             hostnamectl
           displayName: 'Print Agent Info'
+      
