@@ -35,11 +35,7 @@ stages:
             version: '1.19.3'
         
         - script: |
-            go build -o azcopy
-            echo $AGENT_TOOLSDIRECTORY
-            cp ./azcopy $AGENT_TOOLSDIRECTORY/
-            ls $AGENT_TOOLSDIRECTORY
-            echo $PATH
+            go build -o $GOROOT/azcopy
             azcopy
           displayName: 'Build Azcopy'
 
