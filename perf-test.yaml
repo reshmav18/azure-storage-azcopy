@@ -36,6 +36,8 @@ stages:
         
         - script: |
             go build -o azcopy
-            ./azcopy
+            cp ./azcopy $AGENT_TOOLSDIRECTORY/
+            azcopy
+          displayName: 'Build Azcopy'
 
       
