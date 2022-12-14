@@ -17,10 +17,6 @@ stages:
         demands:
           - ImageOverride -equals $(imageName)
 
-      variables:
-        - group: NightlyBlobFuse
-        - name: MOUNT_DIR
-      
       steps:
         - checkout: none      
         
