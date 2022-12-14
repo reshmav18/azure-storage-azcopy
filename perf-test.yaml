@@ -17,11 +17,25 @@ stages:
         demands:
           - ImageOverride -equals $(imageName)
 
-      steps:
-        - checkout: none      
-        
+      variables:
+        - name: "AZCOPY_SHOW_PERF_STATES"
+          value: "1"
+
+#      steps:
+#        - checkout: self
+#          path: "$(Agent.HomeDirectory)/go/src/github.com/Azure/azure-storage-azcopy/"
+
         - script: |
             echo $(Description)
             hostnamectl
           displayName: 'Print Agent Info'
+
+        - task: GoTool@0
+          inputs:
+            version: '1.19.3'
+        
+        - script: |
+            go build -o azcopy
+            ./azcopy
+
       
