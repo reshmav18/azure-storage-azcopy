@@ -4,7 +4,7 @@ pr: none
 stages:
 - stage: Smallfiles
   jobs:
-    - job: Build
+    - job: Perf Test
       timeoutInMinutes: 360
       strategy:
         matrix:
@@ -36,7 +36,10 @@ stages:
         
         - script: |
             go build -o azcopy
+            echo $AGENT_TOOLSDIRECTORY
             cp ./azcopy $AGENT_TOOLSDIRECTORY/
+            ls $AGENT_TOOLSDIRECTORY
+            echo $PATH
             azcopy
           displayName: 'Build Azcopy'
 
