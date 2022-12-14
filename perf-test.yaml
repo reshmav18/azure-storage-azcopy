@@ -1,0 +1,32 @@
+
+trigger: none
+pr: none
+
+stages:
+- stage: smallfiles
+  jobs:
+  - job: Build
+    timeoutInMinutes: 360
+    strategy:
+      matrix:
+        Ubuntu-22:
+          imageName: 'azcopyPerfUbuntu22'
+          type: 'linux'
+    pool:
+      name: 'AzCopyPerfTestUbuntu'
+      demands: 
+        - ImageOverride -equals $(imageName)
+    steps:
+    - checkout: none      
+        - script: |
+
+            echo $(Description)
+
+            hostnamectl
+
+          displayName: 'Print Agent Info'
+      - task: GoTool@0
+        env:
+          GO111MODULE: 'on'
+        inputs:
+          version: '1.19.3'
