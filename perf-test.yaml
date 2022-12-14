@@ -17,16 +17,9 @@ stages:
       demands: 
         - ImageOverride -equals $(imageName)
     steps:
-    - checkout: none      
+    - checkout: none 
+         
         - script: |
-
             echo $(Description)
-
             hostnamectl
-
           displayName: 'Print Agent Info'
-      - task: GoTool@0
-        env:
-          GO111MODULE: 'on'
-        inputs:
-          version: '1.19.3'
