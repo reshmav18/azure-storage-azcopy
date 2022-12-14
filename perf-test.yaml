@@ -4,7 +4,7 @@ pr: none
 stages:
 - stage: Smallfiles
   jobs:
-    - job: Perf Test
+    - job: PerformanceTest
       timeoutInMinutes: 360
       strategy:
         matrix:
