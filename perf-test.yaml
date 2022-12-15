@@ -18,6 +18,10 @@ stages:
           - ImageOverride -equals $(imageName)
 
       variables:
+        - name: "AZCOPY_AUTO_LOGIN_TYPE"
+          value: $(AZCOPY_AUTO_LOGIN_TYPE)
+        - name: "AZCOPY_MSI_CLIENT_ID"
+          value: $(AZCOPY_MSI_CLIENT_ID)
         - name: "AZCOPY_SHOW_PERF_STATES"
           value: "1"
 
@@ -36,7 +40,7 @@ stages:
         
         - script: |
             go build -o $GOROOT/bin/azcopy
-            azcopy
+            azcopy list https://storenakulkar.blob.core.windows.net/container11/
           displayName: 'Build Azcopy'
 
       
