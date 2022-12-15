@@ -17,14 +17,6 @@ stages:
         demands:
           - ImageOverride -equals $(imageName)
 
-      variables:
-        - name: "AZCOPY_AUTO_LOGIN_TYPE"
-          value: $(AZCOPY_AUTO_LOGIN_TYPE)
-        - name: "AZCOPY_MSI_CLIENT_ID"
-          value: $(AZCOPY_MSI_CLIENT_ID)
-        - name: "AZCOPY_SHOW_PERF_STATES"
-          value: "1"
-
       steps:
 #        - checkout: none
 #          path: "$(Agent.HomeDirectory)/go/src/github.com/Azure/azure-storage-azcopy/"
@@ -41,6 +33,10 @@ stages:
         - script: |
             go build -o $GOROOT/bin/azcopy
             azcopy list https://storenakulkar.blob.core.windows.net/container11/
+          env:
+            AZCOPY_AUTO_LOGIN_TYPE: $(AZCOPY_AUTO_LOGIN_TYPE)
+            AZCOPY_MSI_CLIENT_ID: $(AZCOPY_MSI_CLIENT_ID)
+            AZCOPY_SHOW_PERF_STATES: "1"
           displayName: 'Build Azcopy'
 
       
